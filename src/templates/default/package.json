@@ -1,5 +1,5 @@
 {
-  "name": "vite-project",
+  "name": "xstate-counter",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,5 +10,9 @@
   },
   "devDependencies": {
     "vite": "^5.2.0"
+  },
+  "dependencies": {
+    "@codesandbox/sandpack-client": "^2.13.8",
+    "xstate": "^5.13.2"
   }
 }

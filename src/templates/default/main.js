@@ -1,24 +1,26 @@
-import { setupCounter } from './counter.js';
-import javascriptLogo from './javascript.svg';
-import './style.css';
-import viteLogo from '/vite.svg';
+import { createActor } from "xstate";
+import counterMachine from "./counterMachine";
+import "./style.css";
 
-document.querySelector('#app').innerHTML = `
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-      <img src="${javascriptLogo}" class="logo vanilla" alt="JavaScript logo" />
-    </a>
-    <h1>Hello Vite!</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite logo to learn more
-    </p>
-  </div>
-`;
+// document.querySelector("#app").innerHTML = `
+//   <div>
+//     <h1>Counter</h1>
+//     <p id="count">0</p>
+//     <button id="decrement">-</button>
+//     <button id="increment">+</button>
+//   </div>
+// `;
 
-setupCounter(document.querySelector('#counter'));
+const counterService = createActor(counterMachine).start();
+
+document.getElementById("increment").addEventListener("click", () => {
+  counterService.send({
+    type: "INCREMENT",
+  });
+});
+
+document.getElementById("decrement").addEventListener("click", () => {
+  counterService.send({
+    type: "DECREMENT",
+  });
+});
