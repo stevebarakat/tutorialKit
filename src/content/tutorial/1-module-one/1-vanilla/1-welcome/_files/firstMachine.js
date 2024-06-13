@@ -1,23 +1,19 @@
 import { createMachine } from "xstate";
 export const machine = createMachine({
-  initial: "First State",
+  initial: "Off",
   states: {
-    "First State": {
+    Off: {
       on: {
-        next: [
-          {
-            target: "Second State",
-          },
-        ],
+        switch: {
+          target: "On",
+        },
       },
     },
-    "Second State": {
+    On: {
       on: {
-        next: [
-          {
-            target: "First State",
-          },
-        ],
+        switch: {
+          target: "Off",
+        },
       },
     },
   },

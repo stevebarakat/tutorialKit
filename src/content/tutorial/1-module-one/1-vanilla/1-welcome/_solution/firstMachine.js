@@ -1,23 +1,19 @@
 import { createMachine } from "xstate";
 export const machine = createMachine({
-  initial: "First State",
+  initial: "Inactive",
   states: {
-    "First State": {
+    Inactive: {
       on: {
-        next: [
-          {
-            target: "Second State",
-          },
-        ],
+        toggle: {
+          target: "Active",
+        },
       },
     },
-    "Second State": {
+    Active: {
       on: {
-        next: [
-          {
-            target: "First State",
-          },
-        ],
+        toggle: {
+          target: "Inactive",
+        },
       },
     },
   },

@@ -2,15 +2,15 @@ import { createActor } from "xstate";
 import { machine } from "./firstMachine";
 import "./style.css";
 
-const counterService = createActor(machine).start();
+const button = document.querySelector("button");
+const actor = createActor(machine).start();
 
-counterService.subscribe((state) => {
-  const p = document.getElementById("state");
-  p.innerHTML = state.value;
+actor.subscribe((state) => {
+  button.innerText = state.value;
 });
 
-document.querySelector("button").addEventListener("click", () => {
-  counterService.send({
-    type: "next",
+button.addEventListener("click", () => {
+  actor.send({
+    type: "switch",
   });
 });
