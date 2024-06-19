@@ -1,0 +1,291 @@
+---
+type: lesson
+title: History States
+focus: /src/machine.ts
+---
+
+## History States
+
+A history state is a special type of state that remembers the last active state within a compound state. This allows you to resume from where you left off when re-entering a compound state.
+
+#### Example
+
+Let's consider an example of a payment form with two payment methods: card and PayPal. The user can switch between the card and PayPal payment methods. When the user enters their address, they can go back to the payment method they were using.
+
+#### Model
+
+<a
+  href="https://stately.ai/registry/editor/6ad630e7-c4f1-40e5-8068-4c0a0398a8e9?machineId=a5701504-59a3-4092-9bd4-3972be705357&mode=design"
+  target="_blank"
+  alt="First Machine"
+>
+  Open in Stately Studio
+</a>
+<img src="/first-machine.png" alt="First Machine" />
+
+#### Code
+
+In XState, you can define a history state by setting the `type` property to `"history"` in the state configuration. Here's how you can model the payment form example using XState:
+
+```ts
+import { setup } from "xstate";
+
+export const machine = setup({
+  types: {
+    events: {} as
+      | { type: "use.paypal" }
+      | { type: "use.card" }
+      | { type: "enter.address" }
+      | { type: "go.back" },
+  },
+}).createMachine({
+  context: {},
+  initial: "payment",
+  states: {
+    payment: {
+      initial: "card",
+      on: {
+        "enter.address": {
+          target: "address",
+        },
+      },
+      states: {
+        card: {
+          on: {
+            "use.paypal": {
+              target: "paypal",
+            },
+          },
+        },
+        paypal: {
+          on: {
+            "use.card": {
+              target: "card",
+            },
+          },
+        },
+        hist: {
+          type: "history",
+        },
+      },
+    },
+    address: {
+      on: {
+        "go.back": {
+          target: "payment.hist",
+        },
+      },
+    },
+  },
+});
+```
+
+To use this machine in our React component, we'll use the `useMachine` hook again:
+
+```tsx
+import React from "react";
+import { machine } from "./machine";
+import { useMachine } from "@xstate/react";
+
+function App() {
+  const [state, send] = useMachine(machine);
+  const isEnteringAddress = state.matches("address");
+
+  return (
+    <>
+      <div>
+        {state.matches("payment") && (
+          <>
+            <h2>
+              <pre>{JSON.stringify(state.value, null, 2)}</pre>
+            </h2>
+            <h3>Payment method:</h3>
+            <label htmlFor="card">Card</label>
+            <input
+              type="radio"
+              name="card"
+              id="card"
+              value="card"
+              checked={state.matches({ payment: "card" })}
+              onChange={() => send({ type: "use.card" })}
+            />
+            <label htmlFor="paypal">Paypal</label>
+            <input
+              type="radio"
+              name="paypal"
+              id="paypal"
+              value="paypal"
+              checked={state.matches({ payment: "paypal" })}
+              onChange={() => send({ type: "use.paypal" })}
+            />
+          </>
+        )}
+      </div>
+      <div>
+        <label htmlFor="address"></label>
+        <button
+          onClick={() =>
+            send({ type: isEnteringAddress ? "go.back" : "enter.address" })
+          }
+        >
+          {isEnteringAddress ? "Go back" : "Enter address"}
+        </button>
+      </div>
+    </>
+  );
+}
+
+export default App;
+```
+
+You can see an example of this in the code editor to you right.
+[Open in stackblitz](https://stackblitz.com/edit/vitejs-vite-bzhhga?file=src%2Fmachine.ts)
+
+##### Key Points
+
+- We use the `type: "history"` property to define a history state.
+- We use the `target` property to transition to the history state.
+
+#### Exercise
+
+In this exercise, you'll model a subscription form with two subscription types: free and pro. The user can switch between the free and pro subscription types. When the user enters their name, they can go back to the subscription type they were using.
+
+1. Create a new XState machine with the following states:
+
+   - `subscription`
+     - `free`
+     - `pro`
+     - `hist`
+   - `name`
+
+2. Add transitions between the states as follows:
+   - From `subscription` to `name` on the `enter.name` event.
+   - From `free` to `pro` on the `set.pro` event.
+   - From `pro` to `free` on the `set.free` event.
+   - From `name` to `subscription.hist` on the `go.back` event. \* Use the `hist` state to remember the last active state within the `subscription` state.
+
+#### Solution
+
+Here's the solution in XState:
+
+```ts
+import { setup } from "xstate";
+
+export const machine = setup({
+  types: {
+    events: {} as
+      | { type: "set.pro" }
+      | { type: "set.free" }
+      | { type: "enter.name" }
+      | { type: "go.back" },
+  },
+}).createMachine({
+  context: {},
+  initial: "subscription",
+  states: {
+    subscription: {
+      initial: "free",
+      on: {
+        "enter.name": {
+          target: "name",
+        },
+      },
+      states: {
+        free: {
+          on: {
+            "set.pro": {
+              target: "pro",
+            },
+          },
+        },
+        pro: {
+          on: {
+            "set.free": {
+              target: "free",
+            },
+          },
+        },
+        hist: {
+          type: "history",
+        },
+      },
+    },
+    name: {
+      on: {
+        "go.back": {
+          target: "subscription.hist",
+        },
+      },
+    },
+  },
+});
+```
+
+To use this machine in our React component, we'll use the `useMachine` hook again:
+
+```tsx
+import React from "react";
+import { machine } from "./machine";
+import { useMachine } from "@xstate/react";
+
+function App() {
+  const [state, send] = useMachine(machine);
+  const isEnteringName = state.matches("name");
+
+  return (
+    <>
+      <div>
+        {state.matches("subscription") && (
+          <>
+            <h2>
+              <pre>{JSON.stringify(state.value, null, 2)}</pre>
+            </h2>
+            <span>Subscription Type: </span>
+            <label htmlFor="free">Free</label>
+            <input
+              type="radio"
+              name="free"
+              id="free"
+              value="free"
+              checked={state.matches({ subscription: "free" })}
+              onChange={() => send({ type: "set.free" })}
+            />
+            <label htmlFor="pro">Pro</label>
+            <input
+              type="radio"
+              name="pro"
+              id="pro"
+              value="pro"
+              checked={state.matches({ subscription: "pro" })}
+              onChange={() => send({ type: "set.pro" })}
+            />
+          </>
+        )}
+      </div>
+      <div>
+        <label htmlFor="name"></label>
+        <button
+          onClick={() =>
+            send({ type: isEnteringName ? "go.back" : "enter.name" })
+          }
+        >
+          {isEnteringName ? "Go back" : "Enter name"}
+        </button>
+      </div>
+    </>
+  );
+}
+
+export default App;
+```
+
+#### Summary
+
+In this lesson, we learned about compound states and how they can be used to organize complex state machines. We also learned how to use delayed transitions to transition from one state to another after a certain amount of time has passed. We also implemented our first "final" state.
+
+In the next lesson, we'll learn about parallel states and how they can be used to model concurrent behavior.
+
+#### Resources
+
+- [XState Docs](https://stately.ai/docs/xstate)
+- [Stately Studio](https://stately.ai/registry/editor/6ad630e7-c4f1-40e5-8068-4c0a0398a8e9?machineId=a5701504-59a3-4092-9bd4-3972be705357&mode=design)
