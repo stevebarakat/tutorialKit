@@ -1,16 +1,16 @@
 ---
 type: lesson
-title: History States
+title: Deep History States
 focus: /src/machine.ts
 ---
 
-## History States
+## Deep History States
 
-A history state is a special type of state that remembers the last active state within a compound state. This allows you to resume from where you left off when re-entering a compound state.
+In the previous lesson, we learned about history states. History states only remember the last active direct child state. In this lesson, we'll learn about deep history states. Deep history states are similar to history states, but they remember all active descendant states.
 
 #### Example
 
-Let's consider an example of a payment form with two payment methods: card and PayPal. The user can switch between the card and PayPal payment methods. When the user enters their address, they can go back to the payment method they were using.
+Let's consider a payment form with two payment methods: card and PayPal. The card payment method has two card types to choose from: "Visa" or "MasterCard". When the user enters their address, they can go back to the card type they were on. We can use a deep history state to remember the last active descendant state of the payment state.
 
 #### Model
 
@@ -35,6 +35,8 @@ export const machine = setup({
     events: {} as
       | { type: "use.paypal" }
       | { type: "use.card" }
+      | { type: "use.visa" }
+      | { type: "use.masterCard" }
       | { type: "enter.address" }
       | { type: "go.back" },
   },
@@ -43,7 +45,7 @@ export const machine = setup({
   initial: "payment",
   states: {
     payment: {
-      initial: "card",
+      initial: "paypal",
       on: {
         "enter.address": {
           target: "address",
@@ -51,6 +53,23 @@ export const machine = setup({
       },
       states: {
         card: {
+          initial: "visa",
+          states: {
+            visa: {
+              on: {
+                "use.masterCard": {
+                  target: "masterCard",
+                },
+              },
+            },
+            masterCard: {
+              on: {
+                "use.visa": {
+                  target: "visa",
+                },
+              },
+            },
+          },
           on: {
             "use.paypal": {
               target: "paypal",
@@ -66,13 +85,14 @@ export const machine = setup({
         },
         hist: {
           type: "history",
+          history: "deep",
         },
       },
     },
     address: {
       on: {
         "go.back": {
-          target: "payment.hist",
+          target: "#(machine).payment.hist",
         },
       },
     },
@@ -99,7 +119,6 @@ function App() {
             <h2>
               <pre>{JSON.stringify(state.value, null, 2)}</pre>
             </h2>
-            <h3>Payment method:</h3>
             <label htmlFor="card">Card</label>
             <input
               type="radio"
@@ -120,9 +139,31 @@ function App() {
             />
           </>
         )}
+        {state.matches({ payment: "card" }) && (
+          <div>
+            <label htmlFor="visa">Visa</label>
+            <input
+              type="radio"
+              name="visa"
+              id="visa"
+              value="visa"
+              checked={state.matches({ payment: { card: "visa" } })}
+              onChange={() => send({ type: "use.visa" })}
+            />
+            <label htmlFor="masterCard">MasterCard</label>
+            <input
+              type="radio"
+              name="masterCard"
+              id="masterCard"
+              value="masterCard"
+              checked={state.matches({ payment: { card: "masterCard" } })}
+              onChange={() => send({ type: "use.masterCard" })}
+            />
+          </div>
+        )}
       </div>
       <div>
-        <label htmlFor="address"></label>
+        <label htmlFor="address">Address: </label>
         <button
           onClick={() =>
             send({ type: isEnteringAddress ? "go.back" : "enter.address" })
