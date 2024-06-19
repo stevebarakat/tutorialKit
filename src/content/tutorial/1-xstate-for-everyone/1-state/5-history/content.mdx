@@ -25,7 +25,7 @@ Let's consider an example of a payment form with two payment methods: card and P
 
 #### Code
 
-In XState, you can define a history state by setting the `type` property to `"history"` in the state configuration. Here's how you can model the payment form example using XState:
+In XState, you can define a history state by setting the `type` property to `"history"` in the state configuration:
 
 ```ts
 import { setup } from "xstate";
@@ -148,12 +148,10 @@ You can see an example of this in the code editor to you right.
 
 #### Exercise
 
-In this exercise, you'll model a subscription form with two subscription types: free and pro. The user can switch between the free and pro subscription types. When the user enters their name, they can go back to the subscription type they were using.
-
 1. Create a new XState machine with the following states:
 
-   - `subscription`
-     - `free`
+   - `subscription (initial, parent)`
+     - `free (initial)`
      - `pro`
      - `hist`
    - `name`
@@ -162,7 +160,7 @@ In this exercise, you'll model a subscription form with two subscription types: 
    - From `subscription` to `name` on the `enter.name` event.
    - From `free` to `pro` on the `set.pro` event.
    - From `pro` to `free` on the `set.free` event.
-   - From `name` to `subscription.hist` on the `go.back` event. \* Use the `hist` state to remember the last active state within the `subscription` state.
+   - From `name` to `subscription.hist` on the `go.back` event.
 
 #### Solution
 
