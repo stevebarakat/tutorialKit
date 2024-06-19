@@ -1,0 +1,257 @@
+---
+type: lesson
+title: Parallel States
+focus: /src/machine.ts
+---
+
+## Parallel States
+
+Parallel states are used to model concurrent behavior in a state machine. They allow multiple states to exist independently of each other. For example, a media player might have a "track" state that represents the current track being played and a "mute" state that represents the current mute level. These two states can exist independently of each other and can transition between their respective child states without affecting each other.
+
+#### Example: Media Player
+
+Let's create a simple media player state machine that has two parallel states: "track" and "mute". The "track" state will have two child states: "paused" and "playing", and the "mute" state will have two child states: "unmuted" and "muted".
+
+When the media player is in the "paused" state, it can transition to the "playing" state when the "PLAY" event is sent. When the media player is in the "playing" state, it can transition to the "paused" state when the "PAUSE" event is sent.
+
+When the media player is in the "unmuted" state, it can transition to the "muted" state when the "MUTE" event is sent. When the media player is in the "muted" state, it can transition to the "unmuted" state when the "UNMUTE" event is sent.
+
+#### Model
+
+<a
+  href="https://stately.ai/registry/editor/6ad630e7-c4f1-40e5-8068-4c0a0398a8e9?machineId=a5701504-59a3-4092-9bd4-3972be705357&mode=design"
+  target="_blank"
+  alt="First Machine"
+>
+  Open in Stately Studio
+</a>
+<img src="/first-machine.png" alt="First Machine" />
+
+#### Code
+
+Here's the code in XState:
+
+```ts
+import { setup } from "xstate";
+
+export const machine = setup({
+  types: {
+    context: {} as {},
+    events: {} as
+      | { type: "PLAY" }
+      | { type: "PAUSE" }
+      | { type: "MUTE" }
+      | { type: "UNMUTE" },
+  },
+}).createMachine({
+  context: {},
+  id: "player",
+  type: "parallel",
+  states: {
+    track: {
+      initial: "paused",
+      states: {
+        paused: {
+          on: {
+            PLAY: {
+              target: "playing",
+            },
+          },
+        },
+        playing: {
+          on: {
+            PAUSE: {
+              target: "paused",
+            },
+          },
+        },
+      },
+    },
+    mute: {
+      initial: "unmuted",
+      states: {
+        unmuted: {
+          on: {
+            MUTE: {
+              target: "muted",
+            },
+          },
+        },
+        muted: {
+          on: {
+            UNMUTE: {
+              target: "unmuted",
+            },
+          },
+        },
+      },
+    },
+  },
+});
+```
+
+To use this machine in our React component, we'll use the `useMachine` hook again:
+
+```tsx
+import { machine } from "./machine";
+import { useMachine } from "@xstate/react";
+
+function App() {
+  const [state, send] = useMachine(machine);
+  const isPlaying = state.matches({ Track: "Playing" });
+  const isMuted = state.matches({ mute: "Muted" });
+  return (
+    <div>
+      <h1>{JSON.stringify(state.value)}</h1>
+      <button
+        onClick={() => {
+          send({ type: isMuted ? "UNMUTE" : "MUTE" });
+        }}
+      >
+        {isMuted ? "unmute" : "mute"}
+      </button>
+      <button
+        onClick={() =>
+          send({
+            type: isPlaying ? "PAUSE" : "PLAY",
+          })
+        }
+      >
+        {isPlaying ? "pause" : "play"}
+      </button>
+    </div>
+  );
+}
+
+export default App;
+```
+
+You can see an example of this in the code editor to you right.
+[Open in stackblitz](https://stackblitz.com/edit/vitejs-vite-bzhhga?file=src%2Fmachine.ts)
+
+##### Key Points
+
+- Parallel states are used to model concurrent behavior in a state machine.
+- Parallel states allow multiple states to exist independently of each other.
+- Parallel states can have child states that transition independently of each other.
+
+#### Exercise
+
+1. Create a state machine that models a thermostat with two parallel states: "fan" and "setting". The "fan" state should have two child states: "auto" and "on". The "setting" state should have two child states: "heating" and "cooling". The thermostat should have the following transitions:
+
+   - When the "FAN.ON" event is sent, the fan should transition to the "on" state.
+   - When the "FAN.AUTO" event is sent, the fan should transition to the "auto" state.
+   - When the "COOL" event is sent, the setting should transition to the "cooling" state.
+   - When the "HEAT" event is sent, the setting should transition to the "heating" state.
+
+2. Implement the thermostat in a React component that displays the current state and has buttons to toggle the fan and setting states.
+
+#### Solution
+
+Here's the solution in XState:
+
+```ts
+import { setup } from "xstate";
+
+export const machine = setup({
+  types: {
+    events: {} as
+      | { type: "FAN.ON" }
+      | { type: "FAN.AUTO" }
+      | { type: "COOL" }
+      | { type: "HEAT" },
+  },
+}).createMachine({
+  context: {},
+  type: "parallel",
+  states: {
+    fan: {
+      initial: "auto",
+      states: {
+        auto: {
+          on: {
+            "FAN.ON": {
+              target: "on",
+            },
+          },
+        },
+        on: {
+          on: {
+            "FAN.AUTO": {
+              target: "auto",
+            },
+          },
+        },
+      },
+    },
+    setting: {
+      initial: "heating",
+      states: {
+        heating: {
+          on: {
+            COOL: {
+              target: "cooling",
+            },
+          },
+        },
+        cooling: {
+          on: {
+            HEAT: {
+              target: "heating",
+            },
+          },
+        },
+      },
+    },
+  },
+});
+```
+
+To use this machine in our React component, we'll use the `useMachine` hook again:
+
+```tsx
+import { machine } from "./machine";
+import { useMachine } from "@xstate/react";
+
+function App() {
+  const [state, send] = useMachine(machine);
+  const isOn = state.matches({ fan: "on" });
+  const isCooling = state.matches({ setting: "cooling" });
+  return (
+    <div>
+      <h2>
+        <pre>{JSON.stringify(state.value, null, 2)}</pre>
+      </h2>
+      <button
+        onClick={() => {
+          send({ type: isCooling ? "HEAT" : "COOL" });
+        }}
+      >
+        {isCooling ? "AC" : "Heater"}
+      </button>
+      <button
+        onClick={() =>
+          send({
+            type: isOn ? "FAN.AUTO" : "FAN.ON",
+          })
+        }
+      >
+        {isOn ? "On" : "Auto"}
+      </button>
+    </div>
+  );
+}
+
+export default App;
+```
+
+#### Summary
+
+In this lesson, we learned about compound states and how they can be used to organize complex state machines. We also learned how to use delayed transitions to transition from one state to another after a certain amount of time has passed. We also implemented our first "final" state.
+
+In the next lesson, we'll learn about parallel states and how they can be used to model concurrent behavior.
+
+#### Resources
+
+- [XState Docs](https://stately.ai/docs/xstate)
+- [Stately Studio](https://stately.ai/registry/editor/6ad630e7-c4f1-40e5-8068-4c0a0398a8e9?machineId=a5701504-59a3-4092-9bd4-3972be705357&mode=design)
