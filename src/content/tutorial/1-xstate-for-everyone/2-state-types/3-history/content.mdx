@@ -8,6 +8,8 @@ focus: /src/machine.ts
 
 A history state is a special type of state that remembers the last active state within a compound state. This allows you to resume from where you left off when re-entering a compound state.
 
+<img src="/history-states-flow.png" alt="History States" />
+
 #### Example
 
 Let's consider an example of a payment form with two payment methods: card and PayPal. The user can switch between the card and PayPal payment methods. When the user enters their address, they can go back to the payment method they were using.
@@ -20,7 +22,7 @@ Let's consider an example of a payment form with two payment methods: card and P
 >
   Open in Stately Studio
 </a>
-<img src="/first-machine.png" alt="History States in Stately Studio" />
+<img src="/history-states.png" alt="History States in Stately Studio" />
 
 #### Code
 
@@ -161,126 +163,9 @@ You can see an example of this in the code editor to you right.
    - From `pro` to `free` on the `set.free` event.
    - From `name` to `subscription.hist` on the `go.back` event.
 
-#### Solution
-
-Here's the solution in XState:
-
-```ts
-import { setup } from "xstate";
-
-export const machine = setup({
-  types: {
-    events: {} as
-      | { type: "set.pro" }
-      | { type: "set.free" }
-      | { type: "enter.name" }
-      | { type: "go.back" },
-  },
-}).createMachine({
-  context: {},
-  initial: "subscription",
-  states: {
-    subscription: {
-      initial: "free",
-      on: {
-        "enter.name": {
-          target: "name",
-        },
-      },
-      states: {
-        free: {
-          on: {
-            "set.pro": {
-              target: "pro",
-            },
-          },
-        },
-        pro: {
-          on: {
-            "set.free": {
-              target: "free",
-            },
-          },
-        },
-        hist: {
-          type: "history",
-        },
-      },
-    },
-    name: {
-      on: {
-        "go.back": {
-          target: "subscription.hist",
-        },
-      },
-    },
-  },
-});
-```
-
-To use this machine in our React component, we'll use the `useMachine` hook again:
-
-```tsx
-import React from "react";
-import { machine } from "./machine";
-import { useMachine } from "@xstate/react";
-
-function App() {
-  const [state, send] = useMachine(machine);
-  const isEnteringName = state.matches("name");
-
-  return (
-    <>
-      <div>
-        {state.matches("subscription") && (
-          <>
-            <h2>
-              <pre>{JSON.stringify(state.value, null, 2)}</pre>
-            </h2>
-            <span>Subscription Type: </span>
-            <label htmlFor="free">Free</label>
-            <input
-              type="radio"
-              name="free"
-              id="free"
-              value="free"
-              checked={state.matches({ subscription: "free" })}
-              onChange={() => send({ type: "set.free" })}
-            />
-            <label htmlFor="pro">Pro</label>
-            <input
-              type="radio"
-              name="pro"
-              id="pro"
-              value="pro"
-              checked={state.matches({ subscription: "pro" })}
-              onChange={() => send({ type: "set.pro" })}
-            />
-          </>
-        )}
-      </div>
-      <div>
-        <label htmlFor="name"></label>
-        <button
-          onClick={() =>
-            send({ type: isEnteringName ? "go.back" : "enter.name" })
-          }
-        >
-          {isEnteringName ? "Go back" : "Enter name"}
-        </button>
-      </div>
-    </>
-  );
-}
-
-export default App;
-```
-
 #### Summary
 
-In this lesson, we learned about compound states and how they can be used to organize complex state machines. We also learned how to use delayed transitions to transition from one state to another after a certain amount of time has passed. We also implemented our first "final" state.
-
-In the next lesson, we'll learn about parallel states and how they can be used to model concurrent behavior.
+In this lesson, you learned about history states in XState. History states are useful for resuming from where you left off when re-entering a compound state. You can define a history state by setting the `type` property to `"history"` in the state configuration.
 
 #### Resources
 
