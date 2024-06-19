@@ -1,19 +1,25 @@
 ---
 type: lesson
-title: XState and React
+title: Incorporating TypeScript and React
 focus: /firstMachine.js
 ---
 
-## XState and React
+## Incorporating TypeScript and React
 
-In this lesson, you'll learn how to integrate XState with React. We'll use the same machine from last lesson.
+In this lesson, we'll integrate XState with React using the `useMachine` hook provided by the `@xstate/react` package. This hook provides the current state and a `send` function to send events to the machine.
+
+We'll also use the "setup" function from the `@xstate/fsm` package to define the event type for the machine.
 
 #### Code
 
-Here's the machine we created in the last lesson:
+Here's the TypeScript version of the machine we created in the first lesson:
 
-```js
-createMachine({
+```ts
+setup({
+  types: {
+    events: {} as { type: "switch" },
+  },
+}).createMachine({
   initial: "Off",
   states: {
     Off: {

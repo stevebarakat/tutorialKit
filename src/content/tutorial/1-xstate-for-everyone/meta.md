@@ -1,4 +1,4 @@
 ---
 type: part
-title: XState For Everyone
+title: "Introducing State Machines"
 ---

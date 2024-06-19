@@ -1,4 +1,4 @@
 ---
 type: chapter
-title: State
+title: Basics
 ---
