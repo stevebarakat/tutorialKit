@@ -8,7 +8,7 @@ focus: /firstMachine.js
 
 In this lesson, we'll integrate XState with React using the `useMachine` hook provided by the `@xstate/react` package. This hook provides the current state and a `send` function to send events to the machine.
 
-We'll also use the "setup" function from the `@xstate/fsm` package to define the event type for the machine.
+To make TypeScript happy, we'll use XState's `setup` function to define the event `type` for the machine.
 
 #### Code
 
@@ -59,16 +59,14 @@ function App() {
 export default App;
 ```
 
+You can see this code in action in the editor to your right. <a href="https://stackblitz.com/edit/vitejs-vite-7tcvas?file=src%2FreactMachine.ts" alt="Open In Stackblitz" target="_blank">Open in Stackblitz</a>
+
 ##### Key Points
 
 - We use the `useMachine` hook to get the current state and the `send` function.
 - We `send` the "switch" event when the button is clicked.
 - We're using the `matches` method to check if the current state matches a specific state. This is useful for conditionally rendering UI elements based on the current state of the machine.
 - We update the button's text based on the current state.
-
-##### In Practice
-
-You can see an example of this in the code editor to you right. Click the button in the preview panel to toggle betweeen states. Notice how the button's text changes from "On" to "Off" and back again, reflecting the current state of the machine. [Open in stackblitz](https://stackblitz.com/edit/vitejs-vite-twkr61?file=firstMachine.js)
 
 #### Exercise
 
@@ -81,7 +79,7 @@ You can see an example of this in the code editor to you right. Click the button
 
 #### Summary
 
-In this lesson, you learned how to integrate XState with React using the `useMachine` hook. This hook provides the current state and a `send` function to send events to the machine.
+In this lesson, you learned how to integrate XState with React using the `useMachine` hook. This hook provides the current state and a `send` function to send events to the machine. You also learned how to use the `matches` method to conditionally render UI elements based on the current state of the machine.
 
 #### Resources
 
