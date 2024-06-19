@@ -2,22 +2,64 @@ import { setup } from "xstate";
 
 export const machine = setup({
   types: {
-    events: {} as { type: "switch" },
+    events: {} as
+      | { type: "OPEN" }
+      | { type: "PLAY" }
+      | { type: "STOP" }
+      | { type: "PAUSE" }
+      | { type: "CLOSE" },
   },
 }).createMachine({
-  initial: "Off",
+  initial: "Opened",
   states: {
-    Off: {
+    Opened: {
       on: {
-        switch: {
-          target: "On",
+        CLOSE: {
+          target: "Closing",
         },
       },
     },
-    On: {
+    Closing: {
+      after: {
+        "1500": {
+          target: "Closed",
+        },
+      },
+    },
+    Closed: {
+      initial: "Stopped",
       on: {
-        switch: {
-          target: "Off",
+        OPEN: {
+          target: "Opened",
+        },
+      },
+      states: {
+        Stopped: {
+          on: {
+            PLAY: {
+              target: "Playing",
+            },
+          },
+        },
+        Playing: {
+          on: {
+            PAUSE: {
+              target: "Paused",
+            },
+            STOP: {
+              target: "Stopped",
+            },
+          },
+        },
+        Paused: {
+          on: {
+            PLAY: {
+              target: "Playing",
+            },
+            STOP: {
+              target: "Stopped",
+            },
+          },
         },
       },
     },

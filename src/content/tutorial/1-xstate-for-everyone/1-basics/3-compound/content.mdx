@@ -6,27 +6,95 @@ focus: /firstMachine.js
 
 ## Compound States
 
-In this lesson, you'll learn how to integrate XState with React. We'll use the same machine from last lesson.
+In this lesson, we'll get familiar with compound (or parent/child) states. Compound states are states that contain other states. They are useful for organizing and structuring complex state machines. Compound states can have nested states, which can have their own nested states, and so on. This allows you to create a hierarchical structure of states that can represent complex behavior.
+
+We'll also use a special kind of transition called a "delayed transition" to transition from one state to another after a certain amount of time has passed. This is useful for emulating the time it takes for a process to complete, such as a loading a media player.
+
+Let's take a look at an example of a simple state machine with compound states (technically a statechart). This statechart represents an arcane technology called a CD player 😁, in which the CDs are placed in a tray and mechnically closed. It can be in one of three states:
+
+- "Opened", "Closed", and "Closing".
+- The "Closed" state is a parent state.
+- It has three child states: "Stopped", "Playing", and "Paused".
+- The "Closing" state transitions to the "Closed" state after 1500ms.
+
+#### Model
+
+<a
+  href="https://stately.ai/registry/editor/6ad630e7-c4f1-40e5-8068-4c0a0398a8e9?machineId=a5701504-59a3-4092-9bd4-3972be705357&mode=design"
+  target="_blank"
+  alt="First Machine"
+>
+  Open in Stately Studio
+</a>
+<img src="/first-machine.png" alt="First Machine" />
 
 #### Code
 
-Here's the machine we created in the last lesson:
+Here's the code in XState:
 
-```js
-createMachine({
-  initial: "Off",
+```ts
+import { setup } from "xstate";
+
+export const machine = setup({
+  types: {
+    events: {} as
+      | { type: "OPEN" }
+      | { type: "PLAY" }
+      | { type: "STOP" }
+      | { type: "PAUSE" }
+      | { type: "CLOSE" },
+  },
+}).createMachine({
+  initial: "Opened",
   states: {
-    Off: {
+    Opened: {
       on: {
-        switch: {
-          target: "On",
+        CLOSE: {
+          target: "Closing",
         },
       },
     },
-    On: {
+    Closing: {
+      after: {
+        "1500": {
+          target: "Closed",
+        },
+      },
+    },
+    Closed: {
+      initial: "Stopped",
       on: {
-        switch: {
-          target: "Off",
+        OPEN: {
+          target: "Opened",
+        },
+      },
+      states: {
+        Stopped: {
+          on: {
+            PLAY: {
+              target: "Playing",
+            },
+          },
+        },
+        Playing: {
+          on: {
+            PAUSE: {
+              target: "Paused",
+            },
+            STOP: {
+              target: "Stopped",
+            },
+          },
+        },
+        Paused: {
+          on: {
+            PLAY: {
+              target: "Playing",
+            },
+            STOP: {
+              target: "Stopped",
+            },
+          },
         },
       },
     },
@@ -34,19 +102,46 @@ createMachine({
 });
 ```
 
-Instead of using the `createActor` function, we'll use the `useMachine` hook provided by the `@xstate/react` package. This hook returns the current state and a `send` function to send events to the machine.
+To use this machine in our React component, we'll use the `useMachine` hook again:
 
-```js
+```tsx
 import { machine } from "./machine";
 import { useMachine } from "@xstate/react";
 
 function App() {
   const [state, send] = useMachine(machine);
-
+  const isPlaying = state.matches({ Closed: "Playing" });
+  const isOpened = state.matches("Opened");
   return (
-    <button onClick={() => send({ type: "switch" })}>
-      {state.matches("On") ? "On" : "Off"}
-    </button>
+    <div>
+      <h1>{JSON.stringify(state.value)}</h1>
+      <button
+        onClick={() =>
+          send({
+            type: isOpened ? "CLOSE" : "OPEN",
+          })
+        }
+      >
+        {isOpened ? "close" : "open"}
+      </button>
+      <button
+        onClick={() =>
+          send({
+            type: isPlaying ? "PAUSE" : "PLAY",
+          })
+        }
+      >
+        {isPlaying ? "pause" : "play"}
+      </button>
+      <button
+        disabled={isOpened || !isPlaying}
+        onClick={() => {
+          send({ type: "STOP" });
+        }}
+      >
+        stop
+      </button>
+    </div>
   );
 }
 
@@ -55,9 +150,8 @@ export default App;
 
 ##### Key Points
 
-- We use the `useMachine` hook to get the current state and the `send` function.
-- We `send` the "switch" event when the button is clicked.
-- We update the button's text based on the current state.
+- We're using the `matches` method to check if the current state matches a specific state.
+- We're using the `after` property to transition to another state after a certain amount of time has passed. In this case, we're transitioning from the "Closing" state to the "Closed.Playing" state after 1500ms.
 
 ##### In Practice
 

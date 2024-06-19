@@ -57,6 +57,7 @@ export default App;
 
 - We use the `useMachine` hook to get the current state and the `send` function.
 - We `send` the "switch" event when the button is clicked.
+- We're using the `matches` method to check if the current state matches a specific state. This is useful for conditionally rendering UI elements based on the current state of the machine.
 - We update the button's text based on the current state.
 
 ##### In Practice
