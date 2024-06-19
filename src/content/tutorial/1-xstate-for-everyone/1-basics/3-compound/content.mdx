@@ -159,16 +159,31 @@ You can see an example of this in the code editor to you right. Click the button
 
 #### Exercise
 
-1. Change the event type from "switch" to "toggle" in the machine definition.
-2. Update the event type in the `send` method to match the new event type.
-3. Test the changes by clicking the button in the preview panel.
-4. Change the the name of the first state from "Off" to "Inactive" and the second state from "On" to "Active".
-5. Update the button's text to reflect the new state names.
-6. Test the changes by clicking the button in the preview panel.
+1. Create a new state machine that represents a coffee machine. The coffee machine should have the following states:
+
+- "preparation" (initial state, parent state)
+  - "idle"
+  - "weighed"
+  - "ground"
+- "brewing"
+- "ready" (final state)
+
+2. The coffee machine should transition from "idle" to "weighed" when the "weigh" event is sent.
+3. The coffee machine should transition from "weighed" to "ground" when the "grind" event is sent.
+4. The coffee machine should transition from "ground" to "brewing" when the "brew" event is sent.
+5. The coffee machine should transition from "brewing" to "ready" after 3000ms.
+6. Make the "ready" state a "final" state by using the `type: "final"` property. For example:
+   `ready: {
+  type: "final",
+}`
+   This prevents the machine from transitioning to any other state after reaching the "ready" state.
+7. Create a React component that uses the `useMachine` hook to interact with the coffee machine.
 
 #### Summary
 
-In this lesson, you learned how to integrate XState with React using the `useMachine` hook. This hook provides the current state and a `send` function to send events to the machine.
+In this lesson, we learned about compound states and how they can be used to organize complex state machines. We also learned how to use delayed transitions to transition from one state to another after a certain amount of time has passed. We also implemented our first "final" state.
+
+In the next lesson, we'll learn about parallel states and how they can be used to model concurrent behavior.
 
 #### Resources
 
