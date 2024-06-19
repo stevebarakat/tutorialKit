@@ -1,6 +1,5 @@
 import { createActor } from "xstate";
 import { machine } from "./firstMachine";
-import "./style.css";
 
 const button = document.querySelector("button");
 const actor = createActor(machine).start();
