@@ -1,0 +1,82 @@
+---
+type: lesson
+title: XState and React
+focus: /firstMachine.js
+---
+
+## XState and React
+
+In this lesson, you'll learn how to integrate XState with React. We'll use the same machine from last lesson.
+
+#### Code
+
+Here's the machine we created in the last lesson:
+
+```js
+createMachine({
+  initial: "Off",
+  states: {
+    Off: {
+      on: {
+        switch: {
+          target: "On",
+        },
+      },
+    },
+    On: {
+      on: {
+        switch: {
+          target: "Off",
+        },
+      },
+    },
+  },
+});
+```
+
+Instead of using the `createActor` function, we'll use the `useMachine` hook provided by the `@xstate/react` package. This hook returns the current state and a `send` function to send events to the machine.
+
+```js
+import { machine } from "./machine";
+import { useMachine } from "@xstate/react";
+
+function App() {
+  const [state, send] = useMachine(machine);
+
+  return (
+    <button onClick={() => send({ type: "switch" })}>
+      {state.matches("On") ? "On" : "Off"}
+    </button>
+  );
+}
+
+export default App;
+```
+
+##### Key Points
+
+- We use the `useMachine` hook to get the current state and the `send` function.
+- We `send` the "switch" event when the button is clicked.
+- We update the button's text based on the current state.
+
+##### In Practice
+
+You can see an example of this in the code editor to you right. Click the button in the preview panel to toggle betweeen states. Notice how the button's text changes from "On" to "Off" and back again, reflecting the current state of the machine. [Open in stackblitz](https://stackblitz.com/edit/vitejs-vite-twkr61?file=firstMachine.js)
+
+#### Exercise
+
+1. Change the event type from "switch" to "toggle" in the machine definition.
+2. Update the event type in the `send` method to match the new event type.
+3. Test the changes by clicking the button in the preview panel.
+4. Change the the name of the first state from "Off" to "Inactive" and the second state from "On" to "Active".
+5. Update the button's text to reflect the new state names.
+6. Test the changes by clicking the button in the preview panel.
+
+#### Summary
+
+In this lesson, you learned how to integrate XState with React using the `useMachine` hook. This hook provides the current state and a `send` function to send events to the machine.
+
+#### Resources
+
+- [XState Docs](https://stately.ai/docs/xstate)
+- [Stately Studio](https://stately.ai/registry/editor/6ad630e7-c4f1-40e5-8068-4c0a0398a8e9?machineId=a5701504-59a3-4092-9bd4-3972be705357&mode=design)
