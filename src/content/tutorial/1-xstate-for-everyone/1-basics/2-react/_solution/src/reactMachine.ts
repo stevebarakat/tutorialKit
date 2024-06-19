@@ -1,5 +1,10 @@
-import { createMachine } from "xstate";
-export const machine = createMachine({
+import { setup } from "xstate";
+
+export const machine = setup({
+  types: {
+    events: {} as { type: "toggle" },
+  },
+}).createMachine({
   initial: "Inactive",
   states: {
     Inactive: {

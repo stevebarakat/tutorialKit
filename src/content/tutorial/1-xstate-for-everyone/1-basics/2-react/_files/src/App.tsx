@@ -1,5 +1,5 @@
 import React from "react";
-import { machine } from "./machine";
+import { machine } from "./reactMachine";
 import { useMachine } from "@xstate/react";
 
 function App() {
