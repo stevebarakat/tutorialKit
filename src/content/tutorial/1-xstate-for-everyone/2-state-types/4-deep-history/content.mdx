@@ -319,9 +319,9 @@ export default App;
 
 #### Summary
 
-In this lesson, we learned about compound states and how they can be used to organize complex state machines. We also learned how to use delayed transitions to transition from one state to another after a certain amount of time has passed. We also implemented our first "final" state.
-
-In the next lesson, we'll learn about parallel states and how they can be used to model concurrent behavior.
+- Deep history states remember all active descendant states.
+- You can define a deep history state by setting the `type` property to `"history"` and the `history` property to `"deep"`.
+- You can transition to a deep history state using the `target` property.
 
 #### Resources
 

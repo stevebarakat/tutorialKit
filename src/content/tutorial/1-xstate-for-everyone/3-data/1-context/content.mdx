@@ -9,69 +9,38 @@ focus: /firstMachine.js
 We use **state** to store _finite_ state. We use **context** to store _infinite_ state.
 
 - finite state: a predefined set of states that a machine can be in.
-- infinite state: state that has too many values to predefine. For example, the current volume of a music player.
+- infinite state: state that has too many possible values to predefine. For example, the current volume of a music player.
 
-In this excercise, we'll create a state machine that stores the current volume of a music player in context. We'll then use this machine in a React component to display the volume and allow the user to change it.
+In this excercise, we'll create a state machine that stores the current volume of a music player in `context`. Then we'll access `context` in a React component to display the volume.
 
 #### Model
 
 <a
-  href="https://stately.ai/registry/editor/ffb37e31-8109-43b4-84a0-989e4ac533f4?machineId=e1806a79-3d25-4616-a328-2087a1a762a6"
+  href="https://stately.ai/registry/editor/ffb37e31-8109-43b4-84a0-989e4ac533f4?mode=design&machineId=b5282602-044c-4ae5-b9b5-f5eb56809da5"
   target="_blank"
 >
   Open in Stately Studio
 </a>
-<img src="/first-machine.png" alt="First Machine" />
+<img src="/context.png" alt="Context in Stately Studio" />
 
 #### Code
 
 Here's the code for the state machine that stores the current volume in context:
 
 ```ts
-import { setup, assign, assertEvent } from "xstate";
+import { setup } from "xstate";
 
 export const machine = setup({
   types: {
     context: {} as { volume: number },
-    events: {} as
-      | { type: "change.volume"; volume: number }
-      | { type: "start" }
-      | { type: "stop" },
-  },
-  actions: {
-    "change.volume": assign(({ event }) => {
-      assertEvent(event, "change.volume");
-      return { volume: event.volume };
-    }),
   },
 }).createMachine({
   context: {
     volume: 50,
   },
-  id: "Volume Machine",
-  initial: "Stopped",
-  on: {
-    "change.volume": {
-      actions: {
-        type: "change.volume",
-      },
-    },
-  },
+  initial: "Idle",
   states: {
-    Stopped: {
-      on: {
-        start: {
-          target: "Playing",
-        },
-      },
-    },
-    Playing: {
-      on: {
-        stop: {
-          target: "Stopped",
-        },
-      },
-    },
+    Idle: {},
   },
 });
 ```
@@ -83,19 +52,13 @@ import { machine } from "./machine";
 import { useMachine } from "@xstate/react";
 
 function App() {
-  const [state, send] = useMachine(machine);
+  const [state] = useMachine(machine);
   const { volume } = state.context;
 
   return (
     <div>
       <p>Volume: {volume}</p>
-      <input
-        type="range"
-        value={volume}
-        onChange={(e) =>
-          send({ type: "change.volume", volume: e.target.valueAsNumber })
-        }
-      />
+      <input type="range" value={volume} />
     </div>
   );
 }
@@ -105,33 +68,18 @@ export default App;
 
 ##### Key Points
 
-- The context property in the machine definition is used to define the initial context of the machine.
-- The assign action is used to update the context when the change.volume event is sent.
-- Context is accessed in the React component with the useSelector hook, using state.context.
-- The volume is displayed in a paragraph element,
-- An input element is used to change the volume by sending the change.volume event with the new volume.
-- The state machine transitions between the "Stopped" and "Playing" states when the "start" and "stop" events are sent, respectively.
-
-If it helps, you can think of the volume value we're sending with the change.volume event, as the "payload."
+- We use **context** to store the volume.
+- We can access the current context using `state.context`.
 
 ##### In Practice
 
-You can see an example of this in the code editor to you right. Click the button in the preview panel to toggle betweeen states. Notice how the button's text changes from "On" to "Off" and back again, reflecting the current state of the machine. [Open in stackblitz](https://stackblitz.com/edit/vitejs-vite-twkr61?file=firstMachine.js)
-
-#### Exercise
-
-1. Change the event type from "switch" to "toggle" in the machine definition.
-2. Update the event type in the `send` method to match the new event type.
-3. Test the changes by clicking the button in the preview panel.
-4. Change the the name of the first state from "Off" to "Inactive" and the second state from "On" to "Active".
-5. Update the button's text to reflect the new state names.
-6. Test the changes by clicking the button in the preview panel.
+You can see the code in action in the editor. Try changing the volume using the range input. You'll notice that it doesn't update the volume. We'll fix this in the next lesson. For now, update the value of context in the code editor and see how it affects the React component.
 
 #### Summary
 
-In this lesson, you learned how to integrate XState with React using the `useMachine` hook. This hook provides the current state and a `send` function to send events to the machine.
+In this lesson, we learned about context in XState. We use context to store _infinite_ state. We created a state machine that stores the current volume of a music player in context. We then used this machine in a React component to display the volume.
 
 #### Resources
 
 - [XState Docs](https://stately.ai/docs/xstate)
-- [Stately Studio](https://stately.ai/registry/editor/ffb37e31-8109-43b4-84a0-989e4ac533f4?machineId=e1806a79-3d25-4616-a328-2087a1a762a6)
+- [Stately Studio](https://stately.ai/registry/editor/ffb37e31-8109-43b4-84a0-989e4ac533f4?mode=design&machineId=b5282602-044c-4ae5-b9b5-f5eb56809da5)

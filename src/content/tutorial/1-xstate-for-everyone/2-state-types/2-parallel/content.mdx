@@ -6,15 +6,9 @@ focus: /src/machine.ts
 
 ## Parallel States
 
-Parallel states are used to model concurrent behavior in a state machine. They allow multiple states to exist independently of each other. For example, a media player might have a "track" state that represents the current track being played and a "mute" state that represents the current mute level. These two states can exist independently of each other and can transition between their respective child states without affecting each other.
+Parallel states are used to model concurrent behavior in a state machine. They allow multiple states to exist independently of each other.
 
-#### Example: Media Player
-
-Let's create a simple media player state machine that has two parallel states: "track" and "mute". The "track" state will have two child states: "paused" and "playing", and the "mute" state will have two child states: "unmuted" and "muted".
-
-When the media player is in the "paused" state, it can transition to the "playing" state when the "PLAY" event is sent. When the media player is in the "playing" state, it can transition to the "paused" state when the "PAUSE" event is sent.
-
-When the media player is in the "unmuted" state, it can transition to the "muted" state when the "MUTE" event is sent. When the media player is in the "muted" state, it can transition to the "unmuted" state when the "UNMUTE" event is sent.
+For example, a media player might have a "track" state that represents the current track being played and a "mute" state that represents if the track is being muted. These two states can exist independently of each other and can transition between their respective child states without affecting each other.
 
 #### Model
 
@@ -144,111 +138,6 @@ You can see an example of this in the code editor to you right.
    - When the "HEAT" event is sent, the setting should transition to the "heating" state.
 
 2. Implement the thermostat in a React component that displays the current state and has buttons to toggle the fan and setting states.
-
-#### Solution
-
-Here's the solution in XState:
-
-```ts
-import { setup } from "xstate";
-
-export const machine = setup({
-  types: {
-    events: {} as
-      | { type: "FAN.ON" }
-      | { type: "FAN.AUTO" }
-      | { type: "COOL" }
-      | { type: "HEAT" },
-  },
-}).createMachine({
-  context: {},
-  type: "parallel",
-  states: {
-    fan: {
-      initial: "auto",
-      states: {
-        auto: {
-          on: {
-            "FAN.ON": {
-              target: "on",
-            },
-          },
-        },
-        on: {
-          on: {
-            "FAN.AUTO": {
-              target: "auto",
-            },
-          },
-        },
-      },
-    },
-    setting: {
-      initial: "heating",
-      states: {
-        heating: {
-          on: {
-            COOL: {
-              target: "cooling",
-            },
-          },
-        },
-        cooling: {
-          on: {
-            HEAT: {
-              target: "heating",
-            },
-          },
-        },
-      },
-    },
-  },
-});
-```
-
-To use this machine in our React component, we'll use the `useMachine` hook again:
-
-```tsx
-import { machine } from "./machine";
-import { useMachine } from "@xstate/react";
-
-function App() {
-  const [state, send] = useMachine(machine);
-  const isOn = state.matches({ fan: "on" });
-  const isCooling = state.matches({ setting: "cooling" });
-  return (
-    <div>
-      <h2>
-        <pre>{JSON.stringify(state.value, null, 2)}</pre>
-      </h2>
-      <button
-        onClick={() => {
-          send({ type: isCooling ? "HEAT" : "COOL" });
-        }}
-      >
-        {isCooling ? "AC" : "Heater"}
-      </button>
-      <button
-        onClick={() =>
-          send({
-            type: isOn ? "FAN.AUTO" : "FAN.ON",
-          })
-        }
-      >
-        {isOn ? "On" : "Auto"}
-      </button>
-    </div>
-  );
-}
-
-export default App;
-```
-
-#### Summary
-
-In this lesson, we learned about compound states and how they can be used to organize complex state machines. We also learned how to use delayed transitions to transition from one state to another after a certain amount of time has passed. We also implemented our first "final" state.
-
-In the next lesson, we'll learn about parallel states and how they can be used to model concurrent behavior.
 
 #### Resources
 

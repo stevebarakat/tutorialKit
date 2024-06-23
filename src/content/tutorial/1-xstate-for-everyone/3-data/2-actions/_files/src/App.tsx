@@ -9,7 +9,13 @@ function App() {
   return (
     <div>
       <p>Volume: {volume}</p>
-      <input type="range" value={volume} />
+      <input
+        type="range"
+        value={volume}
+        onChange={(e) =>
+          send({ type: "change.volume", volume: e.target.valueAsNumber })
+        }
+      />
     </div>
   );
 }
